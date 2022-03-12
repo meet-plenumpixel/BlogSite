@@ -1,13 +1,12 @@
-from django.shortcuts import render, redirect
+# from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 # from django.contrib import messages
-from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView
 from django.contrib.auth.models import User
 from users import forms as user_forms
-from django.contrib.messages.views import SuccessMessageMixin
-
+from users import models as user_model
+from users.multiview import MultiUpdateView
 
 
 # Create your views here.
@@ -17,11 +16,25 @@ class UserRegisterView(CreateView):
   form_class = user_forms.UserRegisterForm
   template_name = 'users/register.html'
   success_url = reverse_lazy('login')
-
-
-class UserProfileView(UpdateView):
-  template_name = 'users/profile.html'
   
+
+class UserProfileUpdateView(MultiUpdateView):
+  template_name = 'users/profile.html'
+  success_url = reverse_lazy('profile')
+  multi_model = [
+    {
+      'model': User,
+      'fields': ['username', 'email'],
+      'pk': 'request.user.pk',
+      'form_prefix': 'u_'
+    },
+    {
+      'model': user_model.ProfileModel,
+      'fields': ['image'],
+      'pk': 'request.user.profilemodel.pk',
+      'form_prefix': 'p_'
+    },
+  ]
 
 
 class UserLoginView(auth_views.LoginView):
@@ -42,48 +55,3 @@ class UserPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
 
 class UserPasswordResetCompleteView(auth_views.PasswordResetCompleteView):
   template_name = 'users/password_reset_complete.html'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# class ProfileTemplateView(TemplateView):
-#   template_name = 'users/profile_edit.html'
-
-# class UserSignupView(CreateView):
-#   form_class = UserRegisterForm
-#   # success_url = reverse_lazy('login')
-#   success_url = reverse_lazy('signin')
-#   # fields = ['username', 'email', 'password1', 'password2']
-#   template_name = 'registration/signup.html'
-
-# class UserSigninView(SuccessMessageMixin, LoginView):
-#   success_message = "You were successfully logged in"
-#   # next_page = redirect('signout')
-#   # print(dir(next_page))
-
-# class UserSignoutView(SuccessMessageMixin, LogoutView):
-#   success_message = "You were successfully logged out"
-#   next_page = reverse_lazy('signin')
-  
